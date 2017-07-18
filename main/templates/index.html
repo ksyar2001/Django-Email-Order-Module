@@ -1,0 +1,99 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Index Page</title>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
+  <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+  <script>
+  $(function() {
+    var availableTags = {{list|safe}};
+    // alert(availableTags);
+    $.ajaxSetup({
+      data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+    });
+
+
+    $('#order_form').submit(function(e){
+      e.preventDefault();
+      var data = {}
+      var Form = this;
+      $("#submit").text("Submitting...");
+      $("#submit").append("<i class='fa fa-spinner fa-spin'></i>");
+
+      $.each(this.elements, function(i, v){
+        var input = $(v);
+        data[input.attr("name")] = input.val();
+        delete data["undefined"];
+      });
+
+      $.ajax({
+        data: JSON.stringify(data),
+        type: $(this).attr('method'),
+        dataType: "json",
+        url: $(this).attr('action')
+      }).done(function(data){
+        alert("SUCCESS");
+        window.location.href = data.url;
+      });
+    });
+    
+    $( "#tags" ).autocomplete({
+      source: availableTags,
+      select: function(value, data){
+        var row_class_node = document.createElement("div");
+        row_class_node.className = "form-group";
+        var row_class_label = document.createElement("label");
+        var text_node = document.createTextNode(data.item.value);
+        row_class_label.appendChild(text_node);
+        row_class_node.appendChild(row_class_label);
+        row_class_node.id = data.item.value;
+
+        var quantity_node = document.createElement("input");
+        quantity_node.type = "number";
+        quantity_node.style = "max-width: 150px;";
+        quantity_node.className = "form-control";
+        quantity_node.min = '0';
+        quantity_node.step = '0.5';
+        quantity_node.name = data.item.value;
+        quantity_node.value = '1';
+        row_class_node.appendChild(quantity_node);
+
+        var delete_button = document.createElement("button");
+        delete_button.className = "btn btn-danger btn-sm";
+        delete_button.innerHTML = "Delete";
+        row_class_node.appendChild(delete_button);
+
+        delete_button.addEventListener("click", function(e){
+          e.preventDefault();
+          this.parentElement.remove();
+        });
+        
+        $("#order_form").append(row_class_node);
+      }
+    });
+  });
+  </script>
+</head>
+<body>
+ 
+<div class="ui-widget">
+  <label for="tags">Food Item Search: </label>
+  <input id="tags">
+</div>
+
+<form action="/order" method="POST" id="order_form">{% csrf_token %}
+
+
+<button type="submit" id=submit class="btn btn-primary btn-lg">Submit</button>
+<!-- <button type="submit" class="btn btn-primary btn-lg " id="load" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Processing Order">Submit Order</button>
+ -->
+</form>
+
+</body>
+</html>

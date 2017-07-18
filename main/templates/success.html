@@ -1,0 +1,9 @@
+<html>
+	<body>
+		<h1>Email Sent Successfully</h1>
+		<h2>Please check your below and verify the orders sent<h2>
+		{% for order in order_list %}
+		<h3>{{order.item_id}}-{{order.item_name}}-{{order.item_quantity}}</h3>
+		{% endfor %}
+	</body>
+</html>
